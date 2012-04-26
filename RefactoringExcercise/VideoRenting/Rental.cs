@@ -33,6 +33,7 @@ namespace VideoRenting
         {
             return aMovie;
         }
+
         public double GetAmount()
         {
             double thisAmount = 0;
