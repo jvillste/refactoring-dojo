@@ -24,10 +24,38 @@ namespace VideoRenting
             return _daysRented;
         }
 
+        public int FrequentRenterPoints()
+        {
+            return ((GetMovie().GetPriceCode() == Movie.NEW_RELEASE) && GetDaysRented() > 1) ? 2 : 1;
+        }
+
         public Movie GetMovie()
         {
             return aMovie;
         }
+        public double GetAmount()
+        {
+            double thisAmount = 0;
+            // determine amounts for each line
+            switch (GetMovie().GetPriceCode())
+            {
+                case Movie.REGULAR:
+                    thisAmount += 2;
+                    if (GetDaysRented() > 2)
+                        thisAmount += (GetDaysRented() - 2) * 1.5;
+                    break;
+                case Movie.NEW_RELEASE:
+                    thisAmount += GetDaysRented() * 3;
+                    break;
+                case Movie.CHILDRENS: // Lisätty uusi lastenelokuva kategoria
+                    thisAmount += 1.5;
+                    if (GetDaysRented() > 3)
+                        thisAmount += (GetDaysRented() - 3) * 1.5;
+                    break;
+            }
+            return thisAmount;
+        }
+
     }
 
 }

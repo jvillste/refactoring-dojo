@@ -11,8 +11,8 @@ namespace VideoRenting
     /// </summary>
     public class Customer
     {
-        private string _name;
-        private ArrayList _rentals = new ArrayList();
+        private readonly string _name;
+        private List<Rental> _rentals = new List<Rental>();
 
         // Constructor
         public Customer(string _name)
@@ -27,60 +27,58 @@ namespace VideoRenting
 
         public string Statement()
         {
-            double totalAmount = 0;
-            int frequentRenterPoints = 0;
-            IEnumerator rentals = _rentals.GetEnumerator();
+        
             string result = "Rental Record for: " + GetName() + "\n";
-            while (rentals.MoveNext())
+            foreach(var rental in _rentals)
             {
-                double thisAmount = 0;
-                Rental each = (Rental)rentals.Current;
 
-                // determine amounts for each line
-                switch (each.GetMovie().GetPriceCode())
-                {
-                    case Movie.REGULAR:
-                        thisAmount += 2;
-                        if (each.GetDaysRented() > 2)
-                            thisAmount += (each.GetDaysRented() - 2) * 1.5;
-                        break;
-                    case Movie.NEW_RELEASE:
-                        thisAmount += each.GetDaysRented() * 3;
-                        //double discountvalue = GetDiscountValue();
-                        //thisAmount += each.GetDaysRented() * 3
-                        //    - _discount;
-                        break;
-                    case Movie.CHILDRENS: // Lisätty uusi lastenelokuva kategoria
-                        thisAmount += 1.5;
-                        // lastenelokuvien vuokrahinta on kaksi ensimmäistä päivää sama.
-                        // mivuorin, TASK# 1487, 12.07.2009
-                        if (each.GetDaysRented() > 3)
-                            thisAmount += (each.GetDaysRented() - 3) * 1.5;
-                        break;
-                }
-
-                // add frequent renter points
-                frequentRenterPoints++;
-                // add bonus for a two day new release rental
-                if ((each.GetMovie().GetPriceCode() == Movie.NEW_RELEASE) &&
-                        each.GetDaysRented() > 1) frequentRenterPoints++;
-
-                //show figures for this rental
-                result += "\t" + each.GetMovie().GetTitle() + "\t" +
-                        thisAmount.ToString("0.0")+ "\n";
-                totalAmount += thisAmount;
+                result += "\t" + rental.GetMovie().GetTitle() + "\t" +
+                        rental.GetAmount().ToString("0.0")+ "\n";
+            
             }
-
             // add footer lines
-            result += "Amount owed is " + totalAmount.ToString("0.0") + "\n";
-            result += "You earned " + frequentRenterPoints +
+            result += "Amount owed is " + Amount().ToString("0.0") + "\n";
+            result += "You earned " + FrequentUserPoints().ToString("0") +
                     " frequent renter points.";
             return result;
+        }
+
+        public double Amount()
+        {
+            return _rentals.Sum(rental => rental.GetAmount());
+        }
+
+        public int FrequentUserPoints()
+        {
+            return _rentals.Sum(rental => rental.FrequentRenterPoints());
         }
 
         public string GetName()
         {
             return _name;
         }
+
+        public string XmlStatement()
+        {
+
+            var movieStatement = "";
+            foreach (var rental in _rentals)
+            {
+                movieStatement += "<" + rental.GetMovie().GetTitle() + ">" + rental.GetAmount().ToString("0.0") + "</" + rental.GetMovie().GetTitle() + ">";
+            }
+
+
+            return "<RentalRecord>"
+                    +"<CustomerName>" + GetName() + "</CustomerName>"
+                    + "<TotalAmount>" + Amount().ToString("0.0") + "</TotalAmount>"
+                    + "<FrequentUserPoints>" + FrequentUserPoints().ToString("0") + "</FrequentUserPoints>"
+                    +"<Movies>"
+                    + movieStatement
+                    +"</Movies>"
+                    +"</RentalRecord>";
+
+          
+            }
+        }
     }
-}
+
