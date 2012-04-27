@@ -1,5 +1,6 @@
-*/TestResults
-*/*/bin
-*/*/obj
+TestResults/
+bin/
+obj/
 /RefactoringExcercise/_ReSharper.RefactoringExcercise
 /RefactoringExcercise/_ReSharper.RefactoringExcercise
+*.suo
