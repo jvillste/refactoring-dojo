@@ -1,33 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace VideoRenting
+﻿namespace VideoRenting
 {
-    /**
-     * Rental class represenst a customer renting a movie.
-     */
-    public class Rental
-    {
-        private Movie aMovie;
-        private int _daysRented;
+	public class Rental
+	{
+		private int daysRented;
+		private Movie movie;
 
-        public Rental(Movie movie, int daysRented)
-        {
-            this.aMovie = movie;
-            this._daysRented = daysRented;
-        }
+		public Rental(Movie movie, int daysRented)
+		{
+			this.movie = movie;
+			this.daysRented = daysRented;
+		}
 
-        public int GetDaysRented()
-        {
-            return _daysRented;
-        }
+		public double GetAmount()
+		{
+			return movie.GetPrice(daysRented);
+		}
 
-        public Movie GetMovie()
-        {
-            return aMovie;
-        }
-    }
+		public int GetFrequentRenterPoints()
+		{
+			return movie.GetRenterPoints(daysRented);
+		}
 
+		public string GetTitle()
+		{
+			return movie.GetTitle();
+		}
+	}
 }

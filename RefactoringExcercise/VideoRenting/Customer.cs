@@ -1,86 +1,63 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Collections;
 
 namespace VideoRenting
 {
-    /// <summary>
-    /// Customer class
-    /// </summary>
-    public class Customer
-    {
-        private string _name;
-        private ArrayList _rentals = new ArrayList();
+	public class Customer
+	{
+		private string name;
+		private ICollection<Rental> rentals = new List<Rental>();
 
-        // Constructor
-        public Customer(string _name)
-        {
-            this._name = _name;
-        }
+		public Customer(string name)
+		{
+			this.name = name;
+		}
 
-        public void AddRental(Rental arg)
-        {
-            _rentals.Add(arg);
-        }
+		public void AddRental(Rental arg)
+		{
+			rentals.Add(arg);
+		}
 
-        public string Statement()
-        {
-            double totalAmount = 0;
-            int frequentRenterPoints = 0;
-            IEnumerator rentals = _rentals.GetEnumerator();
-            string result = "Rental Record for: " + GetName() + "\n";
-            while (rentals.MoveNext())
-            {
-                double thisAmount = 0;
-                Rental each = (Rental)rentals.Current;
+		public string Statement()
+		{
+			string result = "Rental Record for: " + GetName() + "\n";
+			foreach (Rental rental in rentals)
+			{
+				result += "\t" + rental.GetTitle() + "\t" + rental.GetAmount().ToString("0.0", CultureInfo.InvariantCulture) + "\n";
+			}
+			result += "Amount owed is " + GetTotalAmount().ToString("0.0", CultureInfo.InvariantCulture) + "\n";
+			result += "You earned " + GetTotalFrequentRenterPoints() + " frequent renter points.";
+			return result;
+		}
 
-                // determine amounts for each line
-                switch (each.GetMovie().GetPriceCode())
-                {
-                    case Movie.REGULAR:
-                        thisAmount += 2;
-                        if (each.GetDaysRented() > 2)
-                            thisAmount += (each.GetDaysRented() - 2) * 1.5;
-                        break;
-                    case Movie.NEW_RELEASE:
-                        thisAmount += each.GetDaysRented() * 3;
-                        //double discountvalue = GetDiscountValue();
-                        //thisAmount += each.GetDaysRented() * 3
-                        //    - _discount;
-                        break;
-                    case Movie.CHILDRENS: // Lisätty uusi lastenelokuva kategoria
-                        thisAmount += 1.5;
-                        // lastenelokuvien vuokrahinta on kaksi ensimmäistä päivää sama.
-                        // mivuorin, TASK# 1487, 12.07.2009
-                        if (each.GetDaysRented() > 3)
-                            thisAmount += (each.GetDaysRented() - 3) * 1.5;
-                        break;
-                }
+		private int GetTotalFrequentRenterPoints()
+		{
+			return rentals.Sum(rental => rental.GetFrequentRenterPoints());
+		}
 
-                // add frequent renter points
-                frequentRenterPoints++;
-                // add bonus for a two day new release rental
-                if ((each.GetMovie().GetPriceCode() == Movie.NEW_RELEASE) &&
-                        each.GetDaysRented() > 1) frequentRenterPoints++;
+		private double GetTotalAmount()
+		{
+			return rentals.Sum(rental => rental.GetAmount());
+		}
 
-                //show figures for this rental
-                result += "\t" + each.GetMovie().GetTitle() + "\t" +
-                        thisAmount.ToString("0.0")+ "\n";
-                totalAmount += thisAmount;
-            }
+		public string GetName()
+		{
+			return name;
+		}
 
-            // add footer lines
-            result += "Amount owed is " + totalAmount.ToString("0.0") + "\n";
-            result += "You earned " + frequentRenterPoints +
-                    " frequent renter points.";
-            return result;
-        }
-
-        public string GetName()
-        {
-            return _name;
-        }
-    }
+		public string StatementXml()
+		{
+			string result = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
+			result += "<Rentals customer=\"" + GetName() + "\">";
+			foreach (Rental rental in rentals)
+			{
+				result += "<Rental name=\"" + rental.GetTitle() + "\" price=\"" + rental.GetAmount().ToString("0.0", CultureInfo.InvariantCulture) + "\" />";
+			}
+			result += "<Total>" + GetTotalAmount().ToString("0.0", CultureInfo.InvariantCulture) + "</Total>";
+			result += "<Points>" + GetTotalFrequentRenterPoints() + "</Points>";
+			result += "</Rentals>";
+			return result;
+		}
+	}
 }
