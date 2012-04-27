@@ -1,3 +1,5 @@
 TestResults/
 bin/
 obj/
+/RefactoringExcercise/_ReSharper.RefactoringExcercise
+*.suo
